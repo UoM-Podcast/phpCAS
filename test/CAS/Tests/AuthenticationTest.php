@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * PHP Version 5
+ * PHP Version 7
  *
  * @file     CAS/Tests/AuthenticationTest.php
  * @category Authentication
@@ -27,17 +27,23 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
+namespace PhpCas\Tests;
+
+use PhpCas\TestHarness\BasicResponse;
+use PhpCas\TestHarness\DummyRequest;
+use PHPUnit\Framework\TestCase;
+
 /**
  * Test class for verifying the operation of service tickets.
  *
- * @class    CAS_Tests_AuthenticationTest
+ * @class    AuthenticationTest
  * @category Authentication
  * @package  PhpCAS
  * @author   Adam Franco <afranco@middlebury.edu>
  * @license  http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
-class CAS_Tests_AuthenticationTest extends PHPUnit_Framework_TestCase
+class AuthenticationTest extends TestCase
 {
     /**
      * @var CAS_Client
@@ -47,15 +53,13 @@ class CAS_Tests_AuthenticationTest extends PHPUnit_Framework_TestCase
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         //     	phpCAS::setDebug(dirname(__FILE__).'/../test.log');
         // 		error_reporting(E_ALL);
 
-        CAS_GracefullTerminationException::throwInsteadOfExiting();
+        \CAS_GracefullTerminationException::throwInsteadOfExiting();
 
         $_SERVER['SERVER_NAME'] = 'www.clientapp.com';
         $_SERVER['SERVER_PORT'] = '80';
@@ -66,7 +70,7 @@ class CAS_Tests_AuthenticationTest extends PHPUnit_Framework_TestCase
         $_SERVER['PHP_SELF'] = '/index.php';
         $_SESSION = array();
 
-        $this->object = new CAS_Client(
+        $this->object = new \CAS_Client(
             CAS_VERSION_2_0, // Server Version
             true, // Proxy
             'cas.example.edu', // Server Hostname
@@ -75,15 +79,15 @@ class CAS_Tests_AuthenticationTest extends PHPUnit_Framework_TestCase
             false // Start Session
         );
 
-        $this->object->setRequestImplementation('CAS_TestHarness_DummyRequest');
-        $this->object->setCasServerCACert('/path/to/ca_cert.crt', true);
+        $this->object->setRequestImplementation('PhpCas\TestHarness\DummyRequest');
+        $this->object->setCasServerCACert(__FILE__, true);
 
         /*********************************************************
          * Enumerate our responses
          *********************************************************/
 
         // Set up our response.
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'https', 'cas.example.edu', '/cas/serviceValidate'
         );
         $response->setResponseHeaders(
@@ -105,19 +109,17 @@ class CAS_Tests_AuthenticationTest extends PHPUnit_Framework_TestCase
 </cas:serviceResponse>
 "
             );
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        DummyRequest::addResponse($response);
 
     }
 
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
-        CAS_TestHarness_DummyRequest::clearResponses();
+        DummyRequest::clearResponses();
         $_SESSION = array();
     }
 
@@ -128,16 +130,14 @@ class CAS_Tests_AuthenticationTest extends PHPUnit_Framework_TestCase
      */
     public function testRedirect()
     {
+        ob_start();
+        $this->expectException(\CAS_GracefullTerminationException::class);
         try {
-            ob_start();
             $this->object->forceAuthentication();
-            $this->assertTrue(
-                false, 'Should have thrown a CAS_GracefullTerminationException.'
-            );
-        } catch (CAS_GracefullTerminationException $e) {
+        } catch (\Exception $e) {
             ob_end_clean();
-            // It would be great to test for the existance of headers here, but
-            // the don't get set properly due to output before the test.
+            throw $e;
         }
+        ob_end_clean();
     }
 }

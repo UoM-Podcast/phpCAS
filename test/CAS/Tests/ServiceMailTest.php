@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * PHP Version 5
+ * PHP Version 7
  *
  * @file     CAS/Tests/ServiceMailTest.php
  * @category Authentication
@@ -27,17 +27,24 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
+namespace PhpCas\Tests;
+
+use \CAS_Client;
+use PhpCas\TestHarness\BasicResponse;
+use PhpCas\TestHarness\DummyRequest;
+use PHPUnit\Framework\TestCase;
+
 /**
  * Test class for verifying the operation of service tickets.
  *
- * @class    CAS_Tests_ServiceMailTest
+ * @class    ServiceMailTest
  * @category Authentication
  * @package  PhpCAS
  * @author   Adam Franco <afranco@middlebury.edu>
  * @license  http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
-class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
+class ServiceMailTest extends TestCase
 {
     /**
      * @var CAS_Client
@@ -50,7 +57,7 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         //     	phpCAS::setDebug(dirname(__FILE__).'/../test.log');
         // 		error_reporting(E_ALL);
@@ -73,18 +80,18 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
             false // Start Session
         );
 
-        $this->object->setRequestImplementation('CAS_TestHarness_DummyRequest');
-        $this->object->setCasServerCACert('/path/to/ca_cert.crt', true);
+        $this->object->setRequestImplementation('PhpCas\TestHarness\DummyRequest');
+        $this->object->setCasServerCACert(__FILE__, true);
 
         // Bypass PGT storage since CAS_Client->callback() will exit. Just build
         // up the session manually so that we are in a state from which we can
         // attempt to fetch proxy tickets and make proxied requests.
 
-        $_SESSION['phpCAS']['user'] = 'jdoe';
-        $_SESSION['phpCAS']['pgt'] = 'PGT-clientapp-abc123';
-        $_SESSION['phpCAS']['proxies'] = array();
-        $_SESSION['phpCAS']['service_cookies'] = array();
-        $_SESSION['phpCAS']['attributes'] = array();
+        $_SESSION[CAS_Client::PHPCAS_SESSION_PREFIX]['user'] = 'jdoe';
+        $_SESSION[CAS_Client::PHPCAS_SESSION_PREFIX]['pgt'] = 'PGT-clientapp-abc123';
+        $_SESSION[CAS_Client::PHPCAS_SESSION_PREFIX]['proxies'] = array();
+        $_SESSION[CAS_Client::PHPCAS_SESSION_PREFIX]['service_cookies'] = array();
+        $_SESSION[CAS_Client::PHPCAS_SESSION_PREFIX]['attributes'] = array();
 
         // Force Authentication to initialize the client.
         $this->object->forceAuthentication();
@@ -98,7 +105,7 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
          *********************************************************/
 
         // Proxy ticket Response
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'https', 'cas.example.edu', '/cas/proxy'
         );
         $response->matchQueryParameters(
@@ -126,15 +133,15 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
 </cas:serviceResponse>
 "
         );
-        $response->ensureCaCertPathEquals('/path/to/ca_cert.crt');
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        $response->ensureCaCertPathEquals(__FILE__);
+        DummyRequest::addResponse($response);
 
         /*********************************************************
          * 2. Proxy Ticket Error
          *********************************************************/
 
         // Error Proxy ticket Response
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'https', 'cas.example.edu', '/cas/proxy'
         );
         $response->matchQueryParameters(
@@ -163,8 +170,8 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
 "
         );
 
-        $response->ensureCaCertPathEquals('/path/to/ca_cert.crt');
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        $response->ensureCaCertPathEquals(__FILE__);
+        DummyRequest::addResponse($response);
 
         /*********************************************************
          * Ensure that IMAP constants are defined even if the IMAP
@@ -185,12 +192,10 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
-        CAS_TestHarness_DummyRequest::clearResponses();
+        DummyRequest::clearResponses();
     }
 
     /**
@@ -204,27 +209,6 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
             'imap://mail.example.edu/path/to/something', $err_code, $err_msg
         );
         $this->assertEquals('PT-asdfas-dfasgww2323radf3', $pt);
-    }
-
-    /**
-     * Test that we can at least retrieve a proxy-ticket for the service.
-     *
-     * @return void
-     */
-    public function testServiceMail()
-    {
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete('This test has not been implemented yet.');
-
-        //      $stream = $this->object->serviceMail(
-        //          'mailbox_name',
-        //          'imap://mail.example.edu/path/to/something',
-        //          OP_READONLY, $err_code, $err_msg, $pt
-        //      );
-        //      $this->assertInternalType('resource', $stream);
-        //      $this->assertEquals(PHPCAS_SERVICE_OK, $err_code);
-        //      $this->assertEquals('', $err_msg);
-        //      $this->assertEquals('PT-asdfas-dfasgww2323radf3', $pt);
     }
 
     /**
@@ -248,61 +232,10 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Verify that proxied-service Exceptions are caught and converted to error
-     * codes in serviceMail().
-     *
-     * @return void
-     */
-    public function testServiceMailServiceError()
-    {
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete('This test has not been implemented yet.');
-
-        //      $stream = $this->object->serviceMail(
-        //          'mailbox_name', 'ssh://me.example.net', OP_READONLY,
-        //          $err_code, $err_msg, $pt
-        //      );
-        //      $this->assertFalse(
-        //          $stream,
-        //          "serviceMail() should have returned false on a service error."
-        //      );
-        //      $this->assertEquals(PHPCAS_SERVICE_NOT_AVAILABLE, $err_code);
-        //      $this->assertStringStartsWith("The service", $err_msg);
-        //      $this->assertFalse($pt, '$pt should be false.');
-    }
-
-    /**
-     * Direct usage of the Proxied Imap service.
-     *
-     * @return void
-     */
-    public function testImap()
-    {
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete('This test has not been implemented yet.');
-
-        //     	$service = $this->object->getProxiedService(
-        //          PHPCAS_PROXIED_SERVICE_IMAP
-        //      );
-        //     	$service->setServiceUrl('imap://mail.example.edu/path/to/something');
-        //     	$service->setMailbox('mailbox_name');
-        //     	$service->setOptions(OP_READONLY);
-        //     	$stream = $service->open();
-        //     	$this->assertInternalType('resource', $stream);
-        //     	$this->assertInternalType('resource', $service->getStream());
-        //     	$this->assertEquals(
-        //          'PT-asdfas-dfasgww2323radf3', $service->getImapProxyTicket()
-        //      );
-
-    }
-
-    /**
      * Verify that a CAS_ProxyTicketException is thrown if we try to access a service
      * that results in a proxy-ticket failure.
      *
      * @return void
-     *
-     * @expectedException CAS_ProxyTicketException
      */
     public function testPtException()
     {
@@ -312,29 +245,8 @@ class CAS_Tests_ServiceMailTest extends PHPUnit_Framework_TestCase
         );
         $service->setMailbox('mailbox_name');
         $service->setOptions(OP_READONLY);
+        $this->expectException(\CAS_ProxyTicketException::class);
         $stream = $service->open();
-    }
-
-    /**
-     * Verify that sending fails if we try to access a service
-     * that has a valid proxy ticket, but where the service has a sending error.
-     *
-     * @return void
-     *
-     * @expectedException CAS_ProxiedService_Exception
-     */
-    public function testHttpGetServiceFailure()
-    {
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete('This test has not been implemented yet.');
-
-        //     	$service = $this->object->getProxiedService(
-        //          PHPCAS_PROXIED_SERVICE_IMAP
-        //      );
-        //     	$service->setServiceUrl('ssh://me.example.net');
-        //     	$service->setMailbox('mailbox_name');
-        //     	$service->setOptions(OP_READONLY);
-        //     	$stream = $service->open();
     }
 }
 ?>

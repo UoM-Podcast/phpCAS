@@ -17,30 +17,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * PHP Version 5
  *
- * @file     bootstrap.php
+ * PHP Version 7
+ *
+ * @file     CAS/Session/PhpSession.php
  * @category Authentication
  * @package  PhpCAS
- * @author   Henry Pan <phpcas@phy25.com>
+ * @author   Adam Franco <afranco@middlebury.edu>
  * @license  http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
-require_once dirname(__FILE__) . '/../source/CAS.php';
-
-if(!class_exists('PHPUnit_Framework_TestSuite')) {
-    /**
-     * phpunit 5-7 compatibility
-     */
-    class PHPUnit_Framework_TestSuite extends PHPUnit\Framework\TestSuite {
-
-    }
-
-    /**
-     * phpunit 5-6 compatibility
-     */
-    class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase {
-
-    }
+/**
+ * Empty class used as a default implementation for phpCAS.
+ *
+ * Implements the standard PHP session handler without no alterations.
+ *
+ * @class    CAS_Session_PhpSession
+ * @category Authentication
+ * @package  PhpCAS
+ * @author   Adam Franco <afranco@middlebury.edu>
+ * @license  http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
+ * @link     https://wiki.jasig.org/display/CASC/phpCAS
+ */
+class CAS_Session_PhpSession extends SessionHandler implements SessionHandlerInterface
+{
 }

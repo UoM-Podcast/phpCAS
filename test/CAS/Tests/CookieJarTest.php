@@ -27,10 +27,14 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
+namespace PhpCas\Tests;
+
+use PHPUnit\Framework\TestCase;
+
 /**
  * Test harness for the cookie Jar to allow us to test protected methods.
  *
- * @class    CAS_Tests_CookieJarExposed
+ * @class    CookieJarExposed
  * @category Authentication
  * @package  PhpCAS
  * @author   Adam Franco <afranco@middlebury.edu>
@@ -38,7 +42,7 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
-class CAS_Tests_CookieJarExposed extends CAS_CookieJar
+class CookieJarExposed extends \CAS_CookieJar
 {
     /**
      * Wrapper to call protected methods
@@ -63,14 +67,14 @@ class CAS_Tests_CookieJarExposed extends CAS_CookieJar
  * Test class for verifying the operation of cookie handling methods used in
  * serviceWeb() proxy calls.
  *
- * @class    CAS_Tests_CookieJarTest
+ * @class    CookieJarTest
  * @category Authentication
  * @package  PhpCAS
  * @author   Adam Franco <afranco@middlebury.edu>
  * @license  http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
-class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
+class CookieJarTest extends TestCase
 {
     /**
      * @var CAS_Client
@@ -83,10 +87,10 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->cookieArray = array();
-        $this->object = new CAS_Tests_CookieJarExposed($this->cookieArray);
+        $this->object = new CookieJarExposed($this->cookieArray);
 
         $this->serviceUrl_1 = 'http://service.example.com/lookup/?action=search&query=username';
         $this->responseHeaders_1 = array('HTTP/1.1 302 Found',
@@ -123,10 +127,8 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
 
     }
@@ -387,7 +389,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
     public function testPublicStoreCookies()
     {
         $array = array();
-        $cookieJar = new CAS_CookieJar($array);
+        $cookieJar = new \CAS_CookieJar($array);
         $this->assertEquals(0, count($array));
         $cookieJar->storeCookies($this->serviceUrl_1, $this->responseHeaders_1);
         $this->assertEquals(1, count($array));
@@ -538,7 +540,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
 
         $cookies = $this->object->getCookies($this->serviceUrl_1b);
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals('hello world', $cookies['SID']);
         $this->assertEquals(
             1, count($cookies),
@@ -560,7 +562,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
 
         $cookies = $this->object->getCookies($this->serviceUrl_1b);
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals('hello world', $cookies['SID']);
         $this->assertEquals(
             1, count($cookies),
@@ -608,7 +610,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
 
         $cookies = $this->object->getCookies($this->serviceUrl_1b);
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(
             'hello=world', $cookies['SID'],
             "\tNote: The implementation as of Sept 15, 2010 makes the assumption \n\tthat equals symbols will not be present in quoted attribute values. \n\tWhile attribute values that contain equals symbols are allowed by \n\tRFC2965, they are hopefully rare enough to ignore for our purposes."
@@ -630,7 +632,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
 
         $cookies = $this->object->getCookies($this->serviceUrl_1b);
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals('hello"world', $cookies['SID']);
         $this->assertEquals(1, count($cookies));
     }
@@ -654,7 +656,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
             $this->responseHeaders_1, 'service.example.com'
         );
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies[0]['value']);
@@ -676,7 +678,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $cookies = $this->object
             ->parseCookieHeaders($headers, 'service.example.com');
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies[0]['value']);
@@ -698,7 +700,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $cookies = $this->object
             ->parseCookieHeaders($headers, 'service.example.com');
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies[0]['value']);
@@ -720,7 +722,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $cookies = $this->object
             ->parseCookieHeaders($headers, 'service.example.com');
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies[0]['value']);
@@ -742,7 +744,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $cookies = $this->object
             ->parseCookieHeaders($headers, 'service.example.com');
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies[0]['value']);
@@ -764,7 +766,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $cookies = $this->object
             ->parseCookieHeaders($headers, 'service.example.com');
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies[0]['value']);
@@ -786,7 +788,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $cookies = $this->object
             ->parseCookieHeaders($headers, 'service.example.com');
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies[0]['value']);
@@ -806,7 +808,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $cookies = $this->object
             ->parseCookieHeaders($headers, 'service.example.com');
 
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('SID', $cookies[0]['name']);
         $this->assertEquals('hello world', $cookies[0]['value']);
@@ -823,7 +825,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
     public function testProtectedSetCookie()
     {
         $cookies = $this->object->getCookies($this->serviceUrl_1c);
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies['SID']);
     }
@@ -846,7 +848,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $this->object->storeCookie($cookiesToSet[0]);
 
         $cookies = $this->object->getCookies($this->serviceUrl_1c);
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(1, count($cookies));
         $this->assertEquals('goodbye world', $cookies['SID']);
     }
@@ -865,7 +867,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $this->object->storeCookie($cookiesToSet[0]);
 
         $cookies = $this->object->getCookies($this->serviceUrl_1c);
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(2, count($cookies));
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies['SID']);
         $this->assertEquals('hello world', $cookies['message']);
@@ -888,7 +890,7 @@ class CAS_Tests_CookieJarTest extends PHPUnit_Framework_TestCase
         $this->object->storeCookie($cookiesToSet[0]);
 
         $cookies = $this->object->getCookies($this->serviceUrl_1c);
-        $this->assertInternalType('array', $cookies);
+        $this->assertIsArray($cookies);
         $this->assertEquals(2, count($cookies));
         $this->assertEquals('k1jut1r1bqrumpei837kk4jks0', $cookies['SID']);
         $this->assertEquals('hello world', $cookies['message']);

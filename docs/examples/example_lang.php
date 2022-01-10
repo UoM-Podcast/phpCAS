@@ -3,7 +3,7 @@
 /**
  *  Example that changes language of phpcas pages
  *
- * PHP Version 5
+ * PHP Version 7
  *
  * @file     example_lang.php
  * @category Authentication
@@ -20,7 +20,7 @@ require_once 'config.php';
 require_once $phpcas_path . '/CAS.php';
 
 // Enable debugging
-phpCAS::setDebug();
+phpCAS::setLogger();
 // Enable verbose error messages. Disable in production!
 phpCAS::setVerbose(true);
 

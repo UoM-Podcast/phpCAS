@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * PHP Version 5
+ * PHP Version 7
  *
  * @file     CAS/Tests/ProxyTicketValidationTest.php
  * @category Authentication
@@ -27,17 +27,23 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
+namespace PhpCas\Tests;
+
+use PhpCas\TestHarness\BasicResponse;
+use PhpCas\TestHarness\DummyRequest;
+use PHPUnit\Framework\TestCase;
+
 /**
  * Test class for verifying the operation of service tickets.
  *
- * @class    CAS_Tests_ProxyTicketValidationTest
+ * @class    ProxyTicketValidationTest
  * @category Authentication
  * @package  PhpCAS
  * @author   Adam Franco <afranco@middlebury.edu>
  * @license  http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
-class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
+class ProxyTicketValidationTest extends TestCase
 {
     /**
      * @var CAS_Client
@@ -47,10 +53,8 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $_SERVER['SERVER_NAME'] = 'www.service.com';
         $_SERVER['SERVER_PORT'] = '80';
@@ -63,7 +67,7 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
 
         // 		$_GET['ticket'] = 'ST-123456-asdfasdfasgww2323radf3';
 
-        $this->object = new CAS_Client(
+        $this->object = new \CAS_Client(
             CAS_VERSION_2_0, // Server Version
             false, // Proxy
             'cas.example.edu', // Server Hostname
@@ -72,14 +76,14 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
             false // Start Session
         );
 
-        $this->object->setRequestImplementation('CAS_TestHarness_DummyRequest');
-        $this->object->setCasServerCACert('/path/to/ca_cert.crt', true);
+        $this->object->setRequestImplementation('PhpCas\TestHarness\DummyRequest');
+        $this->object->setCasServerCACert(__FILE__, true);
 
         /*********************************************************
          * Enumerate our responses
          *********************************************************/
         // Valid ticket response
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'https', 'cas.example.edu', '/cas/proxyValidate'
         );
         $response->matchQueryParameters(
@@ -109,11 +113,11 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
 </cas:serviceResponse>
 "
         );
-        $response->ensureCaCertPathEquals('/path/to/ca_cert.crt');
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        $response->ensureCaCertPathEquals(__FILE__);
+        DummyRequest::addResponse($response);
 
         // Invalid ticket response
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'https', 'cas.example.edu', '/cas/proxyValidate'
         );
         $response->matchQueryParameters(
@@ -137,19 +141,17 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
 </cas:serviceResponse>
 "
         );
-        $response->ensureCaCertPathEquals('/path/to/ca_cert.crt');
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        $response->ensureCaCertPathEquals(__FILE__);
+        DummyRequest::addResponse($response);
     }
 
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
-        CAS_TestHarness_DummyRequest::clearResponses();
+        DummyRequest::clearResponses();
     }
 
     /**
@@ -161,7 +163,7 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()
-            ->allowProxyChain(new CAS_ProxyChain_Any());
+            ->allowProxyChain(new \CAS_ProxyChain_Any());
         $result = $this->object
             ->validateCAS20($url, $text_response, $tree_response);
         $this->assertTrue($result);
@@ -189,7 +191,7 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()
-            ->allowProxyChain(new CAS_ProxyChain_Any());
+            ->allowProxyChain(new \CAS_ProxyChain_Any());
         $result = $this->object
             ->validateCAS20($url, $text_response, $tree_response);
         $this->assertTrue($result);
@@ -207,27 +209,19 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
      *
      * @return void
      *
-     * @expectedException CAS_AuthenticationException
-     * @outputBuffering enabled
      */
     public function testInvalidTicketFailure()
     {
         $this->object->setTicket('ST-1856339-aA5Yuvrxzpv8Tau1cYQ7');
         ob_start();
-        $result = $this->object
-            ->validateCAS20($url, $text_response, $tree_response);
+        $this->expectException(\CAS_AuthenticationException::class);
+        try {
+            $this->object->validateCAS20($url, $text_response, $tree_response);
+        } catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
         ob_end_clean();
-        $this->assertTrue($result);
-        $this->assertEquals(
-            "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>
-    <cas:authenticationFailure code='INVALID_TICKET'>
-        Ticket ST-1856339-aA5Yuvrxzpv8Tau1cYQ7 not recognized
-    </cas:authenticationFailure>
-</cas:serviceResponse>
-",
-            $text_response
-        );
-        $this->assertInstanceOf('DOMElement', $tree_response);
     }
 
     /**
@@ -242,7 +236,7 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
         try {
             $result = $this->object
                 ->validateCAS20($url, $text_response, $tree_response);
-        } catch (CAS_AuthenticationException $e) {
+        } catch (\CAS_AuthenticationException $e) {
         }
         ob_end_clean();
         $this->assertEquals(
@@ -260,14 +254,14 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('http://firstproxy.com',
                     'https://anotherdomain.org/mysite/test2'
                 )
             )
         );
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('https://anotherdomain.php')
             )
         );
@@ -298,12 +292,12 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain_Trusted(
+            new \CAS_ProxyChain_Trusted(
                 array('http://firstproxy.com')
             )
         );
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('https://anotherdomain.php')
             )
         );
@@ -331,65 +325,75 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
      *
      * @return void
      *
-     * @expectedException CAS_AuthenticationException
-     * @outputBuffering enabled
      */
     public function testAllowedProxiesStringFailureMissingProxy()
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('https://anotherdomain.php')
             )
         );
-        $result = $this->object
-            ->validateCAS20($url, $text_response, $tree_response);
-        $this->assertFalse($result);
+        ob_start();
+        $this->expectException(\CAS_AuthenticationException::class);
+        try {
+            $this->object->validateCAS20($url, $text_response, $tree_response);
+        } catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
+        ob_end_clean();
     }
 
     /**
      * Test that proxies fail if in wrong order and definded as string
      *
      * @return void
-     *
-     * @expectedException CAS_AuthenticationException
-     * @outputBuffering enabled
      */
     public function testAllowedProxiesStringFailureWrongOrder()
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('https://anotherdomain.org/mysite/test2',
                     'http://firstproxy.com'
                 )
             )
         );
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('https://anotherdomain.php')
             )
         );
-        $result = $this->object
-            ->validateCAS20($url, $text_response, $tree_response);
-        $this->assertFalse($result);
+        ob_start();
+        $this->expectException(\CAS_AuthenticationException::class);
+        try {
+            $this->object->validateCAS20($url, $text_response, $tree_response);
+        } catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
+        ob_end_clean();
     }
 
     /**
      * Test that if proxies exist a response with proxies will fail unless allowed
      *
      * @return void
-     *
-     * @expectedException CAS_AuthenticationException
-     * @outputBuffering enabled
      */
     public function testAllowedProxiesFailure()
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
-        // By default no proxies are allowed.
-        $result = $this->object
-            ->validateCAS20($url, $text_response, $tree_response);
-        $this->assertFalse($result);
+        ob_start();
+        $this->expectException(\CAS_AuthenticationException::class);
+        try {
+            // By default no proxies are allowed.
+            $this->object->validateCAS20($url, $text_response, $tree_response);
+        } catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
+        ob_end_clean();
     }
 
     /**
@@ -401,10 +405,10 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(array('/badregexp/'))
+            new \CAS_ProxyChain(array('/badregexp/'))
         );
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('/http\:\/\/firstproxy\.com.*$/',
                     '/^https\:\/\/anotherdomain.org\/mysite\/test2$/'
                 )
@@ -419,46 +423,50 @@ class CAS_Tests_ProxyTicketValidationTest extends PHPUnit_Framework_TestCase
      * Wrong regexp to mach proxies
      *
      * @return void
-     *
-     * @expectedException CAS_AuthenticationException
-     * @outputBuffering enabled
      */
     public function testAllowedProxiesRegexpFailureWrong()
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('/^http:\/\/secondproxy\.com/', '/^https.*$/')
             )
         );
-        $result = $this->object->validateCAS20(
-            $url, $text_response, $tree_response
-        );
-        $this->assertFalse($result);
+        ob_start();
+        $this->expectException(\CAS_AuthenticationException::class);
+        try {
+            $this->object->validateCAS20($url, $text_response, $tree_response);
+        } catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
+        ob_end_clean();
     }
 
     /**
      * Wrong order of valid regexp
      *
      * @return void
-     *
-     * @expectedException CAS_AuthenticationException
-     * @outputBuffering enabled
      */
     public function testAllowedProxiesRegexpFailureWrongOrder()
     {
         $this->object->setTicket('ST-123456-asdfasdfasgww2323radf3');
         $this->object->getAllowedProxyChains()->allowProxyChain(
-            new CAS_ProxyChain(
+            new \CAS_ProxyChain(
                 array('/^https\:\/\/anotherdomain.org\/mysite\/test2$/',
                     '/http\:\/\/firstproxy\.com.*$/'
                 )
             )
         );
-        $result = $this->object->validateCAS20(
-            $url, $text_response, $tree_response
-        );
-        $this->assertFalse($result);
+        ob_start();
+        $this->expectException(\CAS_AuthenticationException::class);
+        try {
+            $this->object->validateCAS20($url, $text_response, $tree_response);
+        } catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
+        ob_end_clean();
     }
 }
 ?>

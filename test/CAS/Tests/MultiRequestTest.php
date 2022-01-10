@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * PHP Version 5
+ * PHP Version 7
  *
  * @file     CAS/Tests/MultiRequestTest.php
  * @category Authentication
@@ -27,17 +27,24 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
+namespace PhpCas\Tests;
+
+use PhpCas\TestHarness\BasicResponse;
+use PhpCas\TestHarness\DummyMultiRequest;
+use PhpCas\TestHarness\DummyRequest;
+use PHPUnit\Framework\TestCase;
+
 /**
  * Test class for verifying the operation of service tickets.
  *
- * @class    CAS_Tests_MultiRequestTest
+ * @class    MultiRequestTest
  * @category Authentication
  * @package  PhpCAS
  * @author   Adam Franco <afranco@middlebury.edu>
  * @license  http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
-class CAS_Tests_MultiRequestTest extends PHPUnit_Framework_TestCase
+class MultiRequestTest extends TestCase
 {
     /**
      * @var CAS_Client
@@ -47,16 +54,14 @@ class CAS_Tests_MultiRequestTest extends PHPUnit_Framework_TestCase
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
 
         /*********************************************************
          * Enumerate our responses
          *********************************************************/
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'http', 'www.jasig.org', '/some/path'
         );
         $response->ensureIsGet();
@@ -71,9 +76,9 @@ class CAS_Tests_MultiRequestTest extends PHPUnit_Framework_TestCase
             )
         );
         $response->setResponseBody("I am Jasig");
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        DummyRequest::addResponse($response);
 
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'http', 'www.example.org', '/some/other/path'
         );
         $response->ensureIsGet();
@@ -88,9 +93,9 @@ class CAS_Tests_MultiRequestTest extends PHPUnit_Framework_TestCase
             )
         );
         $response->setResponseBody("I am Example");
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        DummyRequest::addResponse($response);
 
-        $response = new CAS_TestHarness_BasicResponse(
+        $response = new BasicResponse(
             'http', 'www.educause.edu', '/path'
         );
         $response->ensureIsGet();
@@ -105,19 +110,17 @@ class CAS_Tests_MultiRequestTest extends PHPUnit_Framework_TestCase
             )
         );
         $response->setResponseBody("I am Educause");
-        CAS_TestHarness_DummyRequest::addResponse($response);
+        DummyRequest::addResponse($response);
 
     }
 
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
-        CAS_TestHarness_DummyRequest::clearResponses();
+        DummyRequest::clearResponses();
     }
 
     /**
@@ -127,7 +130,7 @@ class CAS_Tests_MultiRequestTest extends PHPUnit_Framework_TestCase
      */
     public function testSingle()
     {
-        $request = new CAS_TestHarness_DummyRequest();
+        $request = new DummyRequest();
         $request->setUrl('http://www.example.org/some/other/path');
         $this->assertTrue($request->send());
         $this->assertEquals("I am Example", $request->getResponseBody());
@@ -140,17 +143,17 @@ class CAS_Tests_MultiRequestTest extends PHPUnit_Framework_TestCase
      */
     public function testMultiple()
     {
-        $multi = new CAS_TestHarness_DummyMultiRequest();
+        $multi = new DummyMultiRequest();
 
-        $request1 = new CAS_TestHarness_DummyRequest();
+        $request1 = new DummyRequest();
         $request1->setUrl('http://www.jasig.org/some/path');
         $multi->addRequest($request1);
 
-        $request2 = new CAS_TestHarness_DummyRequest();
+        $request2 = new DummyRequest();
         $request2->setUrl('http://www.example.org/some/other/path');
         $multi->addRequest($request2);
 
-        $request3 = new CAS_TestHarness_DummyRequest();
+        $request3 = new DummyRequest();
         $request3->setUrl('http://www.educause.edu/path');
         $multi->addRequest($request3);
 
