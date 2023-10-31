@@ -7,4 +7,5 @@
 - /.project
 - /.travis.yml
 - /phpunit.xml.dist
+- /composer.json
 - /.rsync-filter
