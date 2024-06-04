@@ -1,0 +1,13 @@
+- /.git*
+- /docs
+- /test
+- /utils
+- /.buildpath
+- /.codecov.yml
+- /.project
+- /.travis.yml
+- /phpunit.xml.dist
+- /composer.json
+- /config.php
+- /index.php
+- /.rsync-filter
