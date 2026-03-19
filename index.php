@@ -13,7 +13,6 @@
  * @link     https://wiki.jasig.org/display/CASC/phpCAS
  */
 
-include 'lib/conf/conf.php';
 // Load the settings from the central config file
 require_once 'config.php';
 // Load the CAS lib
@@ -23,7 +22,7 @@ phpCAS::setDebug();
 // Enable verbose error messages. Disable in production!
 phpCAS::setVerbose(false);
 // Initialize phpCAS
-phpCAS::client(CAS_VERSION_2_0, $cas_host, $cas_port, $cas_context);
+phpCAS::client(CAS_VERSION_2_0, $cas_host, $cas_port, $cas_context, $client_url);
 // For production use set the CA certificate that is the issuer of the cert
 // on the CAS server and uncomment the line below
 // phpCAS::setCasServerCACert($cas_server_ca_cert_path);

@@ -35,6 +35,7 @@ $cas_port = $CAS_port;
 //$cas_real_hosts = array('cas-real-1.example.com', 'cas-real-2.example.com');
 // Client config for cookie hardening
 $client_domain = $CAS_client_domain;
+$client_url = 'https://' . $client_domain;
 $client_path = $CAS_client_path;
 $client_secure = true;
 $client_httpOnly = true;
