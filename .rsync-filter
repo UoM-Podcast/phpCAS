@@ -9,5 +9,4 @@
 - /phpunit.xml.dist
 - /composer.json
 - /config.php
-- /index.php
 - /.rsync-filter
